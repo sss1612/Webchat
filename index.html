@@ -1,0 +1,50 @@
+<style>
+p { background: lightblue; border-radius: 10px; font-size: 16px; color: blue }
+#messages {overflow: scroll; height: 400px; width: 80%; background:#eee }
+</style>
+<script>
+
+let socket = new WebSocket("ws://localhost:12000")
+    socket.onopen = function() {
+        document.getElementById('messages').innerHTML += "<font color='green'>websocket is connected ...</font><br>"
+     }
+
+
+        socket.onmessage = function(event) {
+          var data = JSON.parse(event.data)
+          if(data.message) {
+                var messages = document.getElementById('messages')
+                var node = document.createElement("p")
+                var textnode = document.createTextNode(data.message)
+                node.appendChild(textnode)
+                messages.appendChild(node)
+                messages.scrollTo(0, messages.scrollHeight)
+          } else if(data.count) {
+            document.getElementById("counter").innerHTML = "Online: " + data.count
+          }
+
+        }
+        socket.onclose = function() {
+                document.body.innerHTML = "<font size=50px color=red>Disconnected</font>"
+        }
+
+function send(event) {
+  if(event.keyCode == 13) {
+     var name = document.getElementById("name")
+     var message = document.getElementById("message")
+     socket.send(JSON.stringify({message: name.value +  ":" + message.value}))
+     message.value = ""
+   }
+}
+
+
+</script>
+<div id="messages"></div>
+<div>
+<hr>
+<input id="name" type="text" placeholder="Your Nickname Here"/>
+<br>
+<input id="message" type="text" placeholder="Your Message Here ..." onkeypress="send(event)" style="width:100%; height:110px;font-size:19px"/>
+
+<div id="counter"></div>
+</div>
